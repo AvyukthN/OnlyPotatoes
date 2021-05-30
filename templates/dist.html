@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h1 style = "margin-left: 5%; margin-top: 2%;">Distance To Planets</h1>
+
+<div style = "margin-left: 5%; margin-right: 5%; margin-top: 5%">
+	{% if distance %}
+		<h2>This spot is {{distance}} away from you!!</h2>
+	{% endif %}
+	<form method = "POST" style = "margin-top: 5%">
+	  <div class="mb-3">
+	    <label for="exampleInputPassword1" class="form-label">Enter Two Coordinates (Latitude, Longitude)</label>
+	    <input type="text" class="form-control" id="exampleInputPassword1" name = "coord1"></br>
+	    <input type="text" class="form-control" id="exampleInputPassword1" name = "coord2"></br>
+	    <h2>OR</h2></br>
+	    <label for="exampleInputPassword1" class="form-label">Enter a Planet/Sun</label>
+	    <input type="text" class="form-control" id="exampleInputPassword1" name = "planet">
+	  </div>
+	  <button type="submit" class="btn btn-primary">Submit</button>
+	</form>
+</div></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br>
+
+{% endblock %}

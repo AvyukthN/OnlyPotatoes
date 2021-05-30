@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+{% block content %}
+<img style = "margin-left: 5%; margin-top: 2%;" src = "static/OPOT.png">
+<title>Add Map</title>
+<style type="text/css">
+/* Set the size of the div element that contains the map */
+
+#map {
+height: 700px;
+/* The height is 400 pixels */
+width: 90%;
+/* The width is the width of the web page */
+}
+
+</style>
+<script>
+	function initMap(){
+		var options = {
+			zoom:3,
+			center:{lat:20.5937, lng:0.9629},
+			mapTypeId: "satellite",
+		}
+
+		var map = new google.maps.Map(document.getElementById('map'), options);
+		
+		var data = "{{ data }}";
+		var data2 = "{{ data2 }}";
+		var data3 = "{{ data3 }}";
+		console.log(data);
+
+		var toparse = data.split(",");
+		var toparse2 = data2.split(",");
+		var toparse3 = data3.split(",");
+
+		console.log(toparse);
+		console.log(typeof(toparse));
+
+		var markers= [];
+
+		for (let i = 0; i < toparse.length; i++){
+			var curr_toparse = toparse[i].split("$");
+			console.log(curr_toparse);
+			var latitude = curr_toparse[0];
+			var longitude = curr_toparse[1];
+			
+			var temp = curr_toparse[2];
+			var ph = curr_toparse[3];
+			var humidity = curr_toparse[4];
+			var soil_moisture = curr_toparse[5];
+
+			var description =  "temp " + temp + "\nph " + ph + "\nhumidity " + humidity + "\nsoil_moisture " + soil_moisture;
+
+			markers.push({
+				coords:{lat:parseFloat(latitude),lng:parseFloat(longitude)},
+				crash:true,
+				info:description
+			});
+		}
+		for (let i = 0; i < toparse2.length; i++){
+			var curr_toparse = toparse2[i].split("$");
+			console.log(curr_toparse);
+			var crop_type = curr_toparse[0];
+			var latitude = curr_toparse[1];
+			var longitude = curr_toparse[2];
+
+			var description =  "crop-type " + crop_type
+
+			markers.push({
+				coords:{lat:parseFloat(latitude),lng:parseFloat(longitude)},
+				crop:crop_type,
+				info:description,
+			});
+		}
+		for (let i = 0; i < toparse3.length; i++){
+			var curr_toparse = toparse3[i].split("$");
+			console.log(curr_toparse);
+			var latitude = curr_toparse[0];
+			var longitude = curr_toparse[1];
+
+			var description =  "crop-type "
+
+			markers.push({
+				coords:{lat:parseFloat(latitude),lng:parseFloat(longitude)},
+				crop:"NONE",
+				info:"CENTROID",
+			});
+		}
+		
+		/*
+		toparse = toparse.map(data_point => {
+			return JSON.stringify(data_point)
+		})
+		*/
+	
+	
+		/* for (int i = 0; i < toparse.length; i++){
+			// let parsed = toparse[i].split("$");
+			// console.log(toparse[i]);
+
+			var latitude = parsed[0];
+			var longitude = parsed[1];
+			
+			var temp = parsed[2];
+			var ph = parsed[3];
+			var humidity = parsed[4];
+			var rainfall = parsed[5];
+			var soil_moisture = parsed[6];
+
+			var description =  "temp " + temp + "\nhumidity" + humidity + "\nph" + ph + "\nsoil_moisture" + soil_moisture; 
+			
+			markers.push({
+				coords:{lat:latitude,lng:longitude},
+				crash:True,
+				info:description
+			});
+		} */
+
+		for(var i = 0; i < markers.length; i++){
+			addMarker(markers[i]);
+		}
+       		
+		
+		function addMarker(properties){
+			console.log(properties.crop);
+			if (properties.crop != "potato" && properties.info != "CENTROID"){
+				label = "http://maps.google.com/mapfiles/ms/icons/blue-dot.png";
+			}
+			else if (properties.info == "CENTROID"){
+				label =  "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png";
+			}
+			else if (properties.crop == "potato"){
+				label = '';
+			}
+			
+			var marker = new google.maps.Marker({
+				position: properties.coords,
+				map:map,
+				// you can go on the developers.google.com website and use the images for icons there
+				icon:label
+			});
+			
+			if(properties.content != ''){
+			    var infoWindow = new google.maps.InfoWindow({
+				content:properties.info
+			    });
+
+			    marker.addListener('click', function(){
+				infoWindow.open(map, marker);
+			    });
+			}
+		    }
+	}	
+</script>
+<script
+src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAOOMWd4vcFKm0xNokxlTUe9oexuWt48uI&callback=initMap&libraries=&v=weekly"
+async
+></script>
+
+<!--The div element for the map -->
+<div id="map" style = "margin-left: 5%; margin-right: 5%; margin-top: 2%;"></div>
+
+<!-- Async script executes immediately and must be after any DOM elements used in callback. -->
+<div style = "margin-left: 5%; margin-right: 5%; margin-top: 2%">
+	<h4>To Know If A Potato Is Growable Somwhere, Input Coordinates Of That Area</h4></br>
+	{% if latitude %}
+		<h4>Can You Grow Potatoes Here?: {{potato_bool}}</h4>
+		<h4>Temperature: {{temperature}}</h4>
+		<h4>pH: {{ph}}</h4>
+		<h4>Humidity: {{humidity}}</h4>
+		<h4>Soil Moisture: {{soil_moisture}}</h4>
+		<h4>{{final_message}}</h4></br></br>
+	{% endif %}
+	<form method = "POST">
+	  <div class="mb-3">
+	    <label for="exampleInputPassword1" class="form-label">Location (lat-long)</label>
+	    <input type="text" class="form-control" id="exampleInputPassword1" name = "location">
+	  </div>
+	  <div class="mb-3">
+		<label for="exampleInputPassword1" class="form-label">Crop Type</label></br>
+	    	<select name="type" id="crops">
+		  <option value="potato">Potato :)</option>
+		  <option value="rice">Rice :(</option>
+		  <option value="maize">Maize :(</option>
+		  <option value="corn">Corn :(</option>
+		  <option value="wheat">Wheat :(</option>
+		  <option value="sugar">Sugar :(</option>
+		</select>
+	  </div>
+	  <!--
+	  <div class="mb-3 form-check">
+	    <input type="checkbox" class="form-check-input" id="exampleCheck1">
+	    <label class="form-check-label" for="exampleCheck1">Check me out</label>
+	  </div> -->
+	  <button type="submit" class="btn btn-primary">Submit</button>
+
+	  </br></br>
+
+	</form>
+	<form method = "POST">
+	  <div class="mb-3">
+		<label for="exampleInputPassword1" class="form-label">Machine Learning Analyzation</label></br>
+	    	<select name="KMEANS" id="mlmodel1">
+		  <option value="potato">KMEANS<option>
+		</select>
+	  </div>
+	  <button type = "submit" class = "btn btn-primary">Analyze</button>
+	</form>
+</div></br></br>
+{% endblock %}
